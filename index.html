@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chat App</title>
+    <style>
+      /* Add your CSS styles here */
+    </style>
+  </head>
+  <body>
+    <ul id="messages"></ul>
+    <input type="text" id="message-input" placeholder="Type your message..." />
+    <button onclick="sendMessage()">Send</button>
+
+    <script>
+      function sendMessage() {
+        var message = document.getElementById("message-input").value;
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "/chat", true);
+        xhr.setRequestHeader(
+          "Content-Type",
+          "application/x-www-form-urlencoded"
+        );
+        xhr.send("message=" + encodeURIComponent(message));
+        document.getElementById("message-input").value = "";
+      }
+
+      // Function to continuously fetch messages from server
+      function fetchMessages() {
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function () {
+          if (xhr.readyState == XMLHttpRequest.DONE) {
+            if (xhr.status == 200) {
+              // Update chat box with received messages
+              var li = document.createElement("li");
+              li.textContent = xhr.responseText;
+              document.getElementById("messages").appendChild(li);
+              xhr.responseText = "";
+            }
+          }
+        };
+        xhr.open("GET", "/chat", true);
+        xhr.send();
+      }
+
+      // Fetch messages every 2 seconds
+      setInterval(fetchMessages, 2000);
+    </script>
+  </body>
+</html>

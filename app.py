@@ -1,16 +1,36 @@
-from flask import Flask, render_template
-from flask_socketio import SocketIO, emit
+from wsgiref.simple_server import make_server
+import urllib.parse
 
-app = Flask(__name__)
-socketio = SocketIO(app)
+# Storing messages in memory (not persistent)
+messages = []
 
-@app.route('/')
-def index():
-    return render_template('index.html')
+def application(environ, start_response):
+    status = '200 OK'
+    headers = [('Content-type', 'text/html; charset=utf-8')]
+    start_response(status, headers)
 
-@socketio.on('message')
-def handle_message(msg):
-    emit('message', msg, broadcast=True)
+    if environ['PATH_INFO'] == '/':
+        return [open('index.html', 'rb').read()]
+    elif environ['PATH_INFO'] == '/chat':
+        if environ['REQUEST_METHOD'] == 'POST':
+            # Handling incoming messages
+            try:
+                content_length = int(environ.get('CONTENT_LENGTH', 0))
+                post_data = environ['wsgi.input'].read(content_length).decode('utf-8')
+                message = urllib.parse.parse_qs(post_data)['message'][0]
+                messages.append(message)
+                return [b"Message sent successfully"]
+            except KeyError:
+                return [b"No message sent"]
+
+        # Serving messages to the client
+        elif environ['REQUEST_METHOD'] == 'GET':
+            response_body = '\n'.join(messages).encode('utf-8')
+            return [response_body]
+
+    return [b"Not Found"]
 
 if __name__ == '__main__':
-    socketio.run(app, debug=True, allow_unsafe_werkzeug=True)
+    with make_server('', 8000, application) as httpd:
+        print("Serving on port 8000...")
+        httpd.serve_forever()
