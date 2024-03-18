@@ -9,13 +9,17 @@
     </style>
   </head>
   <body>
+    <input type="text" id="user-input" placeholder="Type your username..." />
     <input type="text" id="message-input" placeholder="Type your message..." />
     <button onclick="sendMessage()">Send</button>
-    <ul id="messages"></ul>
+    <ul style="list-style-type: none" id="messages"></ul>
 
     <script>
+      var prev_msg = "";
       function sendMessage() {
-        let message = document.getElementById("message-input").value;
+        var message = document.getElementById("message-input").value;
+        let user = document.getElementById("user-input").value;
+        message = user + ": " + message;
         let xhr = new XMLHttpRequest();
         xhr.open("POST", "/chat", true);
         xhr.setRequestHeader(
@@ -24,7 +28,6 @@
         );
         xhr.send("message=" + encodeURIComponent(message));
         document.getElementById("message-input").value = "";
-        xhr.send("message=" + encodeURIComponent(""));
       }
 
       // Function to continuously fetch messages from server
@@ -32,14 +35,14 @@
         let xhr = new XMLHttpRequest();
         xhr.onreadystatechange = function () {
           if (xhr.readyState == XMLHttpRequest.DONE) {
-            if (xhr.status == 200 && xhr.responseText != "") {
+            if (xhr.status == 200 && xhr.responseText != prev_msg) {
               // Update chat box with received messages
               var li = document.createElement("li");
               console.log(xhr.responseText);
 
               li.textContent = xhr.responseText;
+              prev_msg = xhr.responseText;
               document.getElementById("messages").appendChild(li);
-              xhr.send("message=" + encodeURIComponent(""));
             }
           }
         };
