@@ -9,14 +9,14 @@
     </style>
   </head>
   <body>
-    <ul id="messages"></ul>
     <input type="text" id="message-input" placeholder="Type your message..." />
     <button onclick="sendMessage()">Send</button>
+    <ul id="messages"></ul>
 
     <script>
       function sendMessage() {
-        var message = document.getElementById("message-input").value;
-        var xhr = new XMLHttpRequest();
+        let message = document.getElementById("message-input").value;
+        let xhr = new XMLHttpRequest();
         xhr.open("POST", "/chat", true);
         xhr.setRequestHeader(
           "Content-Type",
@@ -24,19 +24,22 @@
         );
         xhr.send("message=" + encodeURIComponent(message));
         document.getElementById("message-input").value = "";
+        xhr.send("message=" + encodeURIComponent(""));
       }
 
       // Function to continuously fetch messages from server
       function fetchMessages() {
-        var xhr = new XMLHttpRequest();
+        let xhr = new XMLHttpRequest();
         xhr.onreadystatechange = function () {
           if (xhr.readyState == XMLHttpRequest.DONE) {
-            if (xhr.status == 200) {
+            if (xhr.status == 200 && xhr.responseText != "") {
               // Update chat box with received messages
               var li = document.createElement("li");
+              console.log(xhr.responseText);
+
               li.textContent = xhr.responseText;
               document.getElementById("messages").appendChild(li);
-              xhr.responseText = "";
+              xhr.send("message=" + encodeURIComponent(""));
             }
           }
         };

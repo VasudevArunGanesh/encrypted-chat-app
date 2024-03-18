@@ -25,7 +25,7 @@ def application(environ, start_response):
 
         # Serving messages to the client
         elif environ['REQUEST_METHOD'] == 'GET':
-            response_body = '\n'.join(messages).encode('utf-8')
+            response_body = '\n'.join(messages[-1:]).encode('utf-8')
             return [response_body]
 
     return [b"Not Found"]
